@@ -413,7 +413,16 @@ abstract class Twig_Template implements Twig_TemplateInterface
             $this->env->getExtension('sandbox')->checkMethodAllowed($object, $method);
         }
 
-        $ret = call_user_func_array(array($object, $method), $arguments);
+        //$ret = call_user_func_array(array($object, $method), $arguments);
+        // Try catch aggiunto da Danilo per farlo funzionare con gli oggetti i18n doctrine
+        try
+        {
+          $ret = call_user_func_array(array($object, $method), $arguments);
+        }
+        catch(Doctrine_Record_UnknownPropertyException $e)
+        {
+          $ret = call_user_func_array(array($object, "get".  sfInflector::camelize($method)), $arguments);
+        }
 
         if ($object instanceof Twig_TemplateInterface) {
             return new Twig_Markup($ret);
